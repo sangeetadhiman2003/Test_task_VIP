@@ -4,12 +4,10 @@ class Api::V1::OrdersController < ApplicationController
    order = Order.find_by(external_id: params[:external_id])
 
     if order.present?
-      return render_locked_error(order)
-      if order.locked?
+      return render_locked_error(order) if order.locked?
         ActiveRecord::Base.transaction do
           order.line_items.update_all(original: false)
           create_line_item(order)
-        end
       else
         order = Order.new(orders_params)
         order.save
