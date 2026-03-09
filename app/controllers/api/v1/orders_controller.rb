@@ -5,14 +5,14 @@ class Api::V1::OrdersController < ApplicationController
 
     if order.present?
       return render_locked_error(order) if order.locked?
-        ActiveRecord::Base.transaction do
-          order.line_items.update_all(original: false)
-          create_line_item(order)
-      else
-        order = Order.new(orders_params)
-        order.save
+      ActiveRecord::Base.transaction do
+        order.line_items.update_all(original: false)
         create_line_item(order)
       end
+    else
+      order = Order.new(orders_params)
+      order.save
+      create_line_item(order)
     end
     enqueue_sku_job(order)
     render json: {success: true, message: "Order Created"}
